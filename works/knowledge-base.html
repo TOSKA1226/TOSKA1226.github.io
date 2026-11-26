@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function () {
+  var d = document.documentElement;
+  d.classList.add('js');
+  var saved = null;
+  try { saved = localStorage.getItem('theme'); } catch (e) {}
+  var dark = false;
+  try { dark = window.matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {}
+  d.setAttribute('data-theme', (saved === 'dark' || saved === 'light') ? saved : (dark ? 'dark' : 'light'));
+})();
+</script>
+<title>知识库 · 13 分类 80+ 篇 · 蒋东邕</title>
+<meta name="description" content="13 个分类、80+ 篇 Markdown 笔记的组织方式：分类封顶、front matter 生成索引、一主题一篇、相对链接。">
+<meta name="author" content="蒋东邕">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1424" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://toska1226.github.io/works/knowledge-base.html">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="蒋东邕">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="知识库 · 13 分类 80+ 篇">
+<meta property="og:description" content="13 个分类、80+ 篇 Markdown 笔记的组织方式：分类封顶、front matter 生成索引、一主题一篇、相对链接。">
+<meta property="og:url" content="https://toska1226.github.io/works/knowledge-base.html">
+<meta property="og:image" content="https://toska1226.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="蒋东邕的个人主页分享卡：蓝白配色，姓名与三行简介。">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="知识库 · 13 分类 80+ 篇">
+<meta name="twitter:description" content="13 个分类、80+ 篇 Markdown 笔记的组织方式：分类封顶、front matter 生成索引、一主题一篇、相对链接。">
+<meta name="twitter:image" content="https://toska1226.github.io/assets/og.png">
+
+<link rel="alternate" type="application/rss+xml" title="蒋东邕 · RSS" href="../feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%232563eb'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='PingFang SC,Microsoft YaHei,sans-serif' font-size='36' font-weight='700' fill='%23ffffff'%3E%E8%BF%B0%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="i-code" viewBox="0 0 24 24"><polyline points="8.6 8 4.6 12 8.6 16"/><polyline points="15.4 8 19.4 12 15.4 16"/><line x1="13.3" y1="5.8" x2="10.7" y2="18.2"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.6"/><polyline points="7.4 9.8 10 12 7.4 14.2"/><line x1="12.2" y1="14.6" x2="16.6" y2="14.6"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.4" ry="2.9"/><path d="M4.6 6v6c0 1.6 3.3 2.9 7.4 2.9s7.4-1.3 7.4-2.9V6"/><path d="M4.6 12v6c0 1.6 3.3 2.9 7.4 2.9s7.4-1.3 7.4-2.9v-6"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.1"/><line x1="12" y1="2.6" x2="12" y2="4.8"/><line x1="12" y1="19.2" x2="12" y2="21.4"/><line x1="2.6" y1="12" x2="4.8" y2="12"/><line x1="19.2" y1="12" x2="21.4" y2="12"/><line x1="5.4" y1="5.4" x2="6.9" y2="6.9"/><line x1="17.1" y1="17.1" x2="18.6" y2="18.6"/><line x1="18.6" y1="5.4" x2="17.1" y2="6.9"/><line x1="6.9" y1="17.1" x2="5.4" y2="18.6"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.2 13.4A8.4 8.4 0 1 1 10.6 3.8a6.7 6.7 0 0 0 9.6 9.6Z"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><line x1="4.8" y1="12" x2="18.6" y2="12"/><polyline points="12.8 6.2 18.6 12 12.8 17.8"/></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="9.4 7 17 7 17 14.6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.4"/><line x1="15.6" y1="15.6" x2="20.4" y2="20.4"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><line x1="6.4" y1="6.4" x2="17.6" y2="17.6"/><line x1="17.6" y1="6.4" x2="6.4" y2="17.6"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.6"/><polyline points="3.8 7.2 12 12.8 20.2 7.2"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 2.2a9.8 9.8 0 0 0-3.1 19.1c.49.09.67-.21.67-.47v-1.63c-2.72.59-3.3-1.31-3.3-1.31-.44-1.13-1.08-1.43-1.08-1.43-.88-.6.07-.59.07-.59.98.07 1.49 1 1.49 1 .87 1.48 2.28 1.05 2.84.8.09-.63.34-1.06.62-1.3-2.18-.25-4.47-1.09-4.47-4.85 0-1.07.38-1.95 1.01-2.63-.1-.25-.44-1.25.09-2.6 0 0 .83-.27 2.71 1a9.3 9.3 0 0 1 4.94 0c1.88-1.27 2.71-1 2.71-1 .53 1.35.2 2.35.1 2.6.63.68 1.01 1.56 1.01 2.63 0 3.77-2.3 4.6-4.49 4.84.35.31.67.91.67 1.83v2.71c0 .26.18.57.68.47A9.8 9.8 0 0 0 12 2.2Z"/></symbol>
+    <symbol id="i-rss" viewBox="0 0 24 24"><path d="M5 5.4a13.6 13.6 0 0 1 13.6 13.6"/><path d="M5 10.6A8.4 8.4 0 0 1 13.4 19"/><circle cx="6.3" cy="17.7" r="1.7"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21.2s7-5.3 7-11.1a7 7 0 1 0-14 0c0 5.8 7 11.1 7 11.1Z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 3.2 20 7.6v8.8L12 20.8 4 16.4V7.6Z"/><path d="M4 7.6 12 12l8-4.4"/><line x1="12" y1="12" x2="12" y2="20.8"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9.2 17.8V6.6l9-1.8v11.2"/><circle cx="6.7" cy="17.9" r="2.5"/><circle cx="15.7" cy="15.9" r="2.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.4C10.4 5 8.2 4.5 4.8 4.5v13.2c3.4 0 5.6.6 7.2 2 1.6-1.4 3.8-2 7.2-2V4.5c-3.4 0-5.6.5-7.2 1.9Z"/><line x1="12" y1="6.4" x2="12" y2="19.7"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="3.6" y1="7.6" x2="20.4" y2="7.6"/><line x1="3.6" y1="16.4" x2="20.4" y2="16.4"/><circle cx="9" cy="7.6" r="2.5"/><circle cx="15.4" cy="16.4" r="2.5"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20.2 5.3 15.6 16.4 4.5a2 2 0 0 1 2.8 0l.5.5a2 2 0 0 1 0 2.8L8.6 18.9Z"/><line x1="14.6" y1="6.3" x2="17.7" y2="9.4"/></symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24"><path d="M3.4 12.2 20.6 4l-6.7 16.5L11 13.4Z"/><line x1="11" y1="13.4" x2="20.6" y2="4"/></symbol>
+    <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 13.6 6.6 5.2h10.8L20 13.6v5.2a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 18.8Z"/><path d="M4 13.6h4l1 2.4h6l1-2.4h4"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><line x1="12" y1="7.8" x2="12" y2="12.8"/><circle cx="12" cy="16.2" r=".95"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24"><path d="M9.8 6.2C6.6 7.5 5 9.9 5 13v4.8h5.8v-5.9H8.3c0-1.9.9-3.3 2.6-4.1Zm9 0C15.6 7.5 14 9.9 14 13v4.8h5.8v-5.9h-2.5c0-1.9.9-3.3 2.6-4.1Z"/></symbol>
+  </defs>
+</svg>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="../index.html">蒋东邕<span class="brand-handle">@jiangdongyong</span></a>
+    <nav class="nav-scroll" aria-label="主导航">
+      <ul class="menu" id="menu">
+        <li><a href="../index.html">首页</a></li>
+        <li><a href="../about.html">关于</a></li>
+        <li><a href="../now.html">现在</a></li>
+        <li><a href="../sources.html">信源</a></li>
+        <li><a href="../works.html" class="active" aria-current="page">作品</a></li>
+        <li><a href="../writing.html">文章</a></li>
+        <li><a href="../contact.html">联系</a></li>
+      </ul>
+    </nav>
+    <button class="theme" id="theme-toggle" type="button" aria-label="切换到深色模式" title="切换主题">
+      <svg class="ico ico-moon" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg>
+      <svg class="ico ico-sun" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg>
+    </button>
+  </div>
+</header>
+<main id="main">
+  <section class="phead">
+    <div class="wrap">
+      <nav class="crumb" aria-label="面包屑">
+        <a href="../index.html">首页</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <a href="../works.html">作品</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span aria-current="page">知识库</span>
+      </nav>
+      <h1>知识库</h1>
+      <p class="p-sub">13 个分类、80+ 篇笔记：从教学方法论迁移到工程实践的一次整理。</p>
+      <ul class="meta-row">
+        <li>分类 <b>笔记</b></li>
+        <li>规模 <b>13 分类 / 80+ 篇</b></li>
+        <li>格式 <b>Markdown</b></li>
+        <li class="k">状态 <b>持续更新</b></li>
+      </ul>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="wrap">
+      <div class="prose-layout">
+        <div class="prose">
+        <div class="det-thumb t5"><div class="mock"><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+      <h2>背景与目标</h2>
+      <p>教过英语课，教案、讲法、学生常错的地方，都在纸和聊天记录里；工程笔记散在收藏夹、临时文件和截图里。找的时候全凭记性，改过一遍的老结论也常常被自己重新踩一遍。</p>
+      <p>目标不是「多写」，是「写完之后能找到，并且知道它过没过期」。</p>
+
+      <h2>我具体做了什么</h2>
+      <ol class="steps">
+        <li><b>先定分类，再写内容</b>13 个分类封顶。分类超过十几个，就一定会出现「这条放哪都行」，然后就乱放。定死上限，新主题先塞进最接近的，等真长出第三篇再拆。</li>
+        <li><b>每篇都有 front matter</b>标题、分类、更新时间、状态（草稿 / 可用 / 过期）。索引页从 front matter 生成，不手维护目录 —— 手维护的目录迟早和正文对不上。</li>
+        <li><b>一条迁移规则：一主题一篇，超 400 行就拆</b>长文难维护也难复用。拆成一篇主文加若干细节篇，主文只留判断和入口。</li>
+        <li><b>全部 Markdown + 相对链接</b>能 diff、能 grep、能进 git，离线也读得了。不用需要联网的笔记服务，也不用导出功能来换机器。</li>
+      </ol>
+
+      <h3>把教学结构搬到笔记上</h3>
+      <p>讲课时有效的结构是：先给结论，再给一个反例，最后留一道能自己验的练习。写工程笔记时我照搬了这套 —— 结论在前，常见的错法单独一段，最后写「怎么确认你做对了」。比起按时间线记录，这套结构更耐读。</p>
+
+      <h2>关键取舍</h2>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>维度</th><th>选了</th><th>原因</th></tr></thead>
+        <tbody>
+          <tr><td data-label="维度">格式</td><td data-label="选了">Markdown</td><td data-label="原因">可版本化、可离线、可迁移</td></tr>
+          <tr><td data-label="维度">分类</td><td data-label="选了">13 个封顶</td><td data-label="原因">逼着合并，而不是无限细分</td></tr>
+          <tr><td data-label="维度">目录</td><td data-label="选了">front matter 生成</td><td data-label="原因">索引可再生成，不会失效</td></tr>
+          <tr><td data-label="维度">链接</td><td data-label="选了">相对路径</td><td data-label="原因">换机器、换路径不断链</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2>结果</h2>
+      <ul>
+        <li>13 个分类、80+ 篇；</li>
+        <li>索引页由脚本生成，改完 front matter 重跑即可；</li>
+        <li>从教学沉淀下来的方法（拆步骤、给反例、留练习）直接套到工程笔记上；</li>
+        <li>整套内容可以直接进版本库，改动能看 diff。</li>
+      </ul>
+
+      <h2>下一步</h2>
+      <p>把「教学 → 工程」的映射表单独成篇：怎么把讲给别人听的结构，变成写给未来的自己的结构。这是我认为最值得写、也最容易被跳过的一篇。</p>
+        </div>
+        <aside class="side">
+          <div class="side-card">
+            <h3>项目信息</h3>
+            <dl>
+              <dt>角色</dt><dd>内容 + 结构</dd>
+              <dt>分类</dt><dd>笔记 · 知识管理</dd>
+              <dt>规模</dt><dd>13 分类 / 80+ 篇</dd>
+              <dt>状态</dt><dd>持续更新</dd>
+            </dl>
+          </div>
+          <div class="side-card">
+            <h3>技术栈</h3>
+            <div class="taglist">
+              <span>Markdown</span>
+              <span>Obsidian</span>
+              <span>front matter</span>
+              <span>脚本生成索引</span>
+            </div>
+          </div>
+          <div class="side-card">
+            <h3>相关</h3>
+            <div class="side-links">
+              <a href="../works.html">全部作品 <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></a>
+              <a href="../writing.html">文章：教学经历如何迁移成工程方法 <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></a>
+              <a href="../about.html">关于我 <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></a>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <nav class="pager" aria-label="作品翻页">
+        <a class="prev" href="qq-bot.html"><span class="dir">← 上一个</span><span class="t">QQ 机器人后端</span></a>
+      </nav>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="wrap foot-inner">
+    <p class="foot-meta">© 2026 蒋东邕 · 内容 CC BY-NC 4.0</p>
+    <p class="foot-copy">Built with plain HTML · Hosted on Cloudflare Pages · No trackers</p>
+    <div class="foot-soc">
+      <a href="https://github.com/TOSKA1226" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+      </a>
+      <a href="../contact.html" data-mail="link" aria-label="电子邮件">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-mail"></use></svg>
+      </a>
+      <a href="/feed.xml" aria-label="RSS 订阅">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-rss"></use></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>
