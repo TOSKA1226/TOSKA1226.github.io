@@ -79,7 +79,7 @@ personal-site/
 
 | 想改什么 | 位置 |
 | --- | --- |
-| 姓名 / handle | 全站 `蒋东邕` 与 `@jiangdongyong`（sed 批量替换） |
+| 姓名 / handle | 全站 `蒋东邕` 与 `@TOSKA1226`（sed 批量替换） |
 | 首页大标题、定位语 | `index.html` 的 `.hero h1` 与 `.hero-desc` |
 | 首页数字指标 | `index.html` 的 `.stats` |
 | 信息源 | `data/sources.json`（见下节） |
