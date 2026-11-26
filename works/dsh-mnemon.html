@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function () {
+  var d = document.documentElement;
+  d.classList.add('js');
+  var saved = null;
+  try { saved = localStorage.getItem('theme'); } catch (e) {}
+  var dark = false;
+  try { dark = window.matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {}
+  d.setAttribute('data-theme', (saved === 'dark' || saved === 'light') ? saved : (dark ? 'dark' : 'light'));
+})();
+</script>
+<title>dsh-mnemon · Agent 长期记忆 · 蒋东邕</title>
+<meta name="description" content="dsh-mnemon 的设计与实现：档案与洞察两层存储、关键词加向量双通道召回、水位增量同步、软删与 gc，附具体取舍与结果。">
+<meta name="author" content="蒋东邕">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1424" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://toska1226.github.io/works/dsh-mnemon.html">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="蒋东邕">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="dsh-mnemon · Agent 长期记忆">
+<meta property="og:description" content="dsh-mnemon 的设计与实现：档案与洞察两层存储、关键词加向量双通道召回、水位增量同步、软删与 gc，附具体取舍与结果。">
+<meta property="og:url" content="https://toska1226.github.io/works/dsh-mnemon.html">
+<meta property="og:image" content="https://toska1226.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="蒋东邕的个人主页分享卡：蓝白配色，姓名与三行简介。">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="dsh-mnemon · Agent 长期记忆">
+<meta name="twitter:description" content="dsh-mnemon 的设计与实现：档案与洞察两层存储、关键词加向量双通道召回、水位增量同步、软删与 gc，附具体取舍与结果。">
+<meta name="twitter:image" content="https://toska1226.github.io/assets/og.png">
+
+<link rel="alternate" type="application/rss+xml" title="蒋东邕 · RSS" href="../feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%232563eb'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='PingFang SC,Microsoft YaHei,sans-serif' font-size='36' font-weight='700' fill='%23ffffff'%3E%E8%BF%B0%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="i-code" viewBox="0 0 24 24"><polyline points="8.6 8 4.6 12 8.6 16"/><polyline points="15.4 8 19.4 12 15.4 16"/><line x1="13.3" y1="5.8" x2="10.7" y2="18.2"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.6"/><polyline points="7.4 9.8 10 12 7.4 14.2"/><line x1="12.2" y1="14.6" x2="16.6" y2="14.6"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.4" ry="2.9"/><path d="M4.6 6v6c0 1.6 3.3 2.9 7.4 2.9s7.4-1.3 7.4-2.9V6"/><path d="M4.6 12v6c0 1.6 3.3 2.9 7.4 2.9s7.4-1.3 7.4-2.9v-6"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.1"/><line x1="12" y1="2.6" x2="12" y2="4.8"/><line x1="12" y1="19.2" x2="12" y2="21.4"/><line x1="2.6" y1="12" x2="4.8" y2="12"/><line x1="19.2" y1="12" x2="21.4" y2="12"/><line x1="5.4" y1="5.4" x2="6.9" y2="6.9"/><line x1="17.1" y1="17.1" x2="18.6" y2="18.6"/><line x1="18.6" y1="5.4" x2="17.1" y2="6.9"/><line x1="6.9" y1="17.1" x2="5.4" y2="18.6"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.2 13.4A8.4 8.4 0 1 1 10.6 3.8a6.7 6.7 0 0 0 9.6 9.6Z"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><line x1="4.8" y1="12" x2="18.6" y2="12"/><polyline points="12.8 6.2 18.6 12 12.8 17.8"/></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="9.4 7 17 7 17 14.6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.4"/><line x1="15.6" y1="15.6" x2="20.4" y2="20.4"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><line x1="6.4" y1="6.4" x2="17.6" y2="17.6"/><line x1="17.6" y1="6.4" x2="6.4" y2="17.6"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.6"/><polyline points="3.8 7.2 12 12.8 20.2 7.2"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 2.2a9.8 9.8 0 0 0-3.1 19.1c.49.09.67-.21.67-.47v-1.63c-2.72.59-3.3-1.31-3.3-1.31-.44-1.13-1.08-1.43-1.08-1.43-.88-.6.07-.59.07-.59.98.07 1.49 1 1.49 1 .87 1.48 2.28 1.05 2.84.8.09-.63.34-1.06.62-1.3-2.18-.25-4.47-1.09-4.47-4.85 0-1.07.38-1.95 1.01-2.63-.1-.25-.44-1.25.09-2.6 0 0 .83-.27 2.71 1a9.3 9.3 0 0 1 4.94 0c1.88-1.27 2.71-1 2.71-1 .53 1.35.2 2.35.1 2.6.63.68 1.01 1.56 1.01 2.63 0 3.77-2.3 4.6-4.49 4.84.35.31.67.91.67 1.83v2.71c0 .26.18.57.68.47A9.8 9.8 0 0 0 12 2.2Z"/></symbol>
+    <symbol id="i-rss" viewBox="0 0 24 24"><path d="M5 5.4a13.6 13.6 0 0 1 13.6 13.6"/><path d="M5 10.6A8.4 8.4 0 0 1 13.4 19"/><circle cx="6.3" cy="17.7" r="1.7"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21.2s7-5.3 7-11.1a7 7 0 1 0-14 0c0 5.8 7 11.1 7 11.1Z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 3.2 20 7.6v8.8L12 20.8 4 16.4V7.6Z"/><path d="M4 7.6 12 12l8-4.4"/><line x1="12" y1="12" x2="12" y2="20.8"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9.2 17.8V6.6l9-1.8v11.2"/><circle cx="6.7" cy="17.9" r="2.5"/><circle cx="15.7" cy="15.9" r="2.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.4C10.4 5 8.2 4.5 4.8 4.5v13.2c3.4 0 5.6.6 7.2 2 1.6-1.4 3.8-2 7.2-2V4.5c-3.4 0-5.6.5-7.2 1.9Z"/><line x1="12" y1="6.4" x2="12" y2="19.7"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="3.6" y1="7.6" x2="20.4" y2="7.6"/><line x1="3.6" y1="16.4" x2="20.4" y2="16.4"/><circle cx="9" cy="7.6" r="2.5"/><circle cx="15.4" cy="16.4" r="2.5"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20.2 5.3 15.6 16.4 4.5a2 2 0 0 1 2.8 0l.5.5a2 2 0 0 1 0 2.8L8.6 18.9Z"/><line x1="14.6" y1="6.3" x2="17.7" y2="9.4"/></symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24"><path d="M3.4 12.2 20.6 4l-6.7 16.5L11 13.4Z"/><line x1="11" y1="13.4" x2="20.6" y2="4"/></symbol>
+    <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 13.6 6.6 5.2h10.8L20 13.6v5.2a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 18.8Z"/><path d="M4 13.6h4l1 2.4h6l1-2.4h4"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><line x1="12" y1="7.8" x2="12" y2="12.8"/><circle cx="12" cy="16.2" r=".95"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24"><path d="M9.8 6.2C6.6 7.5 5 9.9 5 13v4.8h5.8v-5.9H8.3c0-1.9.9-3.3 2.6-4.1Zm9 0C15.6 7.5 14 9.9 14 13v4.8h5.8v-5.9h-2.5c0-1.9.9-3.3 2.6-4.1Z"/></symbol>
+  </defs>
+</svg>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="../index.html">蒋东邕<span class="brand-handle">@jiangdongyong</span></a>
+    <nav class="nav-scroll" aria-label="主导航">
+      <ul class="menu" id="menu">
+        <li><a href="../index.html">首页</a></li>
+        <li><a href="../about.html">关于</a></li>
+        <li><a href="../now.html">现在</a></li>
+        <li><a href="../sources.html">信源</a></li>
+        <li><a href="../works.html" class="active" aria-current="page">作品</a></li>
+        <li><a href="../writing.html">文章</a></li>
+        <li><a href="../contact.html">联系</a></li>
+      </ul>
+    </nav>
+    <button class="theme" id="theme-toggle" type="button" aria-label="切换到深色模式" title="切换主题">
+      <svg class="ico ico-moon" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg>
+      <svg class="ico ico-sun" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg>
+    </button>
+  </div>
+</header>
+<main id="main">
+  <section class="phead">
+    <div class="wrap">
+      <nav class="crumb" aria-label="面包屑">
+        <a href="../index.html">首页</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <a href="../works.html">作品</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span aria-current="page">dsh-mnemon</span>
+      </nav>
+      <h1>dsh-mnemon</h1>
+      <p class="p-sub">给 Agent 一套能查、能改、能追溯的长期记忆，而不是把聊天记录一直往前塞。</p>
+      <ul class="meta-row">
+        <li>分类 <b>Agent</b></li>
+        <li>角色 <b>设计 + 实现</b></li>
+        <li>起于 <b>2026-06</b></li>
+        <li class="k">状态 <b>持续维护</b></li>
+      </ul>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="wrap">
+      <div class="prose-layout">
+        <div class="prose">
+        <div class="det-thumb t1"><div class="mock"><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+      <h2>背景与目标</h2>
+      <p>Agent 的上下文是有限的。每次开一个新会话，之前定下的约定、踩过的坑、写过的判断，全都得重新讲一遍。把聊天记录一路往前堆，token 先撑不住，检索也只会越来越糊。</p>
+      <p>所以这个项目的目标不是「记得更多」，而是「记得准、查得到、改得动」。三条硬指标：</p>
+      <ul>
+        <li>单次召回压到几百 token 量级，而不是几万；</li>
+        <li>任何一条记忆都能追到它是什么时候、因为什么写进去的；</li>
+        <li>存量有上限，逼着自己做摘要，而不是把原文一股脑塞进去。</li>
+      </ul>
+      <p>结论先放在这里：<strong>记忆要做薄</strong>。薄的意思是每条都短、都能被改写，而不是把整段对话冷冻起来。</p>
+
+      <h2>我具体做了什么</h2>
+      <ol class="steps">
+        <li><b>拆成两个存储层，而不是一张「记忆表」</b><em>档案层</em>放结构化长文，<code>index.json</code> 做索引，每篇 front matter 里带 <code>revision</code>，改动可追溯；<em>洞察层</em>放一句话级别的结论，可以软删。查询先看洞察，命中不了再翻档案 —— 大多数问题在几十 token 内就解决了。</li>
+        <li><b>检索做成关键词 + 向量双通道，不引入向量数据库</b>元数据和全文交给 SQLite，向量走 bge-m3 的 1024 维，落成旁挂文件；查询时两路各取候选再合并排序。几十 MB 的量级上纯余弦足够快，省掉一个常驻服务和一整套部署。检索脚本就一个 <code>sem_search.py</code>，拷走就能跑。</li>
+        <li><b>同步按水位 + 指纹做增量</b>每个工作区记录上次同步的水位（时间 + 序号），只处理水位之后有改动的文件；文件指纹（大小 + 修改时间）没变就直接跳过。Windows 上把大目录用 junction 分到别的盘，扫描时按 junction 分流，不重复遍历同一份数据。</li>
+        <li><b>清洗单独做一条流程</b>按 id 前缀筛出目标集合，逐条软删（保留记录，可回滚），再统一 gc 回收。系统提示词那种噪声在入库前就过滤掉，不让它占预算。</li>
+      </ol>
+
+      <h3>为什么是双通道</h3>
+      <p>只用关键词，问「上次那个限流的参数」找不到；只用向量，问「哪篇写了 Pages 的构建上限」会飘。两路候选合并再排序，比任何单路都稳，代价只是多算一次。</p>
+
+      <h2>关键取舍</h2>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>维度</th><th>选了</th><th>原因</th></tr></thead>
+        <tbody>
+          <tr><td data-label="维度">存储</td><td data-label="选了">SQLite + 旁挂向量文件</td><td data-label="原因">单机、无服务，备份就是拷目录</td></tr>
+          <tr><td data-label="维度">向量库</td><td data-label="选了">不上，纯余弦暴力算</td><td data-label="原因">数据量小，维护索引比算一次更贵</td></tr>
+          <tr><td data-label="维度">记忆粒度</td><td data-label="选了">一句一条</td><td data-label="原因">长文没法复用，短句才能拼装</td></tr>
+          <tr><td data-label="维度">删除</td><td data-label="选了">软删 + gc</td><td data-label="原因">判断做错了要能退回去</td></tr>
+          <tr><td data-label="维度">全库上限</td><td data-label="选了">10MB</td><td data-label="原因">主动约束，逼着压缩而不是堆原文</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2>结果</h2>
+      <ul>
+        <li>全库压在 10MB 以内，索引和数据一起拷走就能换机器；</li>
+        <li>单次召回是若干条短句，不是整段对话；</li>
+        <li>增量同步只碰有改动的文件，日常几分钟内跑完；</li>
+        <li>水位和指纹都落盘，中断之后能接着走。</li>
+      </ul>
+
+      <h2>下一步</h2>
+      <p>现在最缺的是评估：召回准不准，全靠我自己读一遍判断。想做一个小评估集（问题 + 期望命中的条目），每次改检索策略都跑一遍，把「感觉变好了」换成数字。另外想把语义检索接进 recall 的自动路由 —— 关键词无命中时自己降级，而不是我手动跑脚本。</p>
+        </div>
+        <aside class="side">
+          <div class="side-card">
+            <h3>项目信息</h3>
+            <dl>
+              <dt>角色</dt><dd>设计 + 实现</dd>
+              <dt>分类</dt><dd>Agent · 记忆系统</dd>
+              <dt>起于</dt><dd>2026-06</dd>
+              <dt>状态</dt><dd>持续维护</dd>
+            </dl>
+          </div>
+          <div class="side-card">
+            <h3>技术栈</h3>
+            <div class="taglist">
+              <span>Python</span>
+              <span>SQLite</span>
+              <span>bge-m3</span>
+              <span>Ollama</span>
+              <span>纯余弦</span>
+              <span>增量同步</span>
+              <span>junction</span>
+            </div>
+          </div>
+          <div class="side-card">
+            <h3>相关</h3>
+            <div class="side-links">
+              <a href="../works.html">全部作品 <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></a>
+              <a href="../writing.html">文章：把记忆做薄，而不是做大 <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></a>
+              <a href="../sources.html">AI / Agent 信息源 <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></a>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <nav class="pager" aria-label="作品翻页">
+        <a class="next" href="dsh-plugins.html"><span class="dir">下一个 →</span><span class="t">dsh 插件工具箱</span></a>
+      </nav>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="wrap foot-inner">
+    <p class="foot-meta">© 2026 蒋东邕 · 内容 CC BY-NC 4.0</p>
+    <p class="foot-copy">Built with plain HTML · Hosted on Cloudflare Pages · No trackers</p>
+    <div class="foot-soc">
+      <a href="https://github.com/TOSKA1226" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+      </a>
+      <a href="../contact.html" data-mail="link" aria-label="电子邮件">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-mail"></use></svg>
+      </a>
+      <a href="/feed.xml" aria-label="RSS 订阅">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-rss"></use></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>
