@@ -1,0 +1,7 @@
+.backup-archive-v1/
+.backup-archive-v2/
+.backup-archive-v3/
+previews/
+.DS_Store
+Thumbs.db
+.tools-detail-helper.txt
