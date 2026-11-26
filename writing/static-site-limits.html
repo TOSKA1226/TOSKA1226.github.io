@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function () {
+  var d = document.documentElement;
+  d.classList.add('js');
+  var saved = null;
+  try { saved = localStorage.getItem('theme'); } catch (e) {}
+  var dark = false;
+  try { dark = window.matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {}
+  d.setAttribute('data-theme', (saved === 'dark' || saved === 'light') ? saved : (dark ? 'dark' : 'light'));
+})();
+</script>
+<title>免费静态站的边界在哪里 · 蒋东邕</title>
+<meta name="description" content="静态站能力的边界与四家免费平台的实测额度对比，以及国内访问、备案取舍和「什么时候该放弃静态」的判断信号。">
+<meta name="author" content="蒋东邕">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1424" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://toska1226.github.io/writing/static-site-limits.html">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="蒋东邕">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="免费静态站的边界在哪里">
+<meta property="og:description" content="静态站能力的边界与四家免费平台的实测额度对比，以及国内访问、备案取舍和「什么时候该放弃静态」的判断信号。">
+<meta property="og:url" content="https://toska1226.github.io/writing/static-site-limits.html">
+<meta property="og:image" content="https://toska1226.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="蒋东邕的个人主页分享卡：蓝白配色，姓名与三行简介。">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="免费静态站的边界在哪里">
+<meta name="twitter:description" content="静态站能力的边界与四家免费平台的实测额度对比，以及国内访问、备案取舍和「什么时候该放弃静态」的判断信号。">
+<meta name="twitter:image" content="https://toska1226.github.io/assets/og.png">
+
+<link rel="alternate" type="application/rss+xml" title="蒋东邕 · RSS" href="../feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%232563eb'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='PingFang SC,Microsoft YaHei,sans-serif' font-size='36' font-weight='700' fill='%23ffffff'%3E%E8%BF%B0%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="i-code" viewBox="0 0 24 24"><polyline points="8.6 8 4.6 12 8.6 16"/><polyline points="15.4 8 19.4 12 15.4 16"/><line x1="13.3" y1="5.8" x2="10.7" y2="18.2"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.6"/><polyline points="7.4 9.8 10 12 7.4 14.2"/><line x1="12.2" y1="14.6" x2="16.6" y2="14.6"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.4" ry="2.9"/><path d="M4.6 6v6c0 1.6 3.3 2.9 7.4 2.9s7.4-1.3 7.4-2.9V6"/><path d="M4.6 12v6c0 1.6 3.3 2.9 7.4 2.9s7.4-1.3 7.4-2.9v-6"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.1"/><line x1="12" y1="2.6" x2="12" y2="4.8"/><line x1="12" y1="19.2" x2="12" y2="21.4"/><line x1="2.6" y1="12" x2="4.8" y2="12"/><line x1="19.2" y1="12" x2="21.4" y2="12"/><line x1="5.4" y1="5.4" x2="6.9" y2="6.9"/><line x1="17.1" y1="17.1" x2="18.6" y2="18.6"/><line x1="18.6" y1="5.4" x2="17.1" y2="6.9"/><line x1="6.9" y1="17.1" x2="5.4" y2="18.6"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.2 13.4A8.4 8.4 0 1 1 10.6 3.8a6.7 6.7 0 0 0 9.6 9.6Z"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><line x1="4.8" y1="12" x2="18.6" y2="12"/><polyline points="12.8 6.2 18.6 12 12.8 17.8"/></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="9.4 7 17 7 17 14.6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.4"/><line x1="15.6" y1="15.6" x2="20.4" y2="20.4"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><line x1="6.4" y1="6.4" x2="17.6" y2="17.6"/><line x1="17.6" y1="6.4" x2="6.4" y2="17.6"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.6"/><polyline points="3.8 7.2 12 12.8 20.2 7.2"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 2.2a9.8 9.8 0 0 0-3.1 19.1c.49.09.67-.21.67-.47v-1.63c-2.72.59-3.3-1.31-3.3-1.31-.44-1.13-1.08-1.43-1.08-1.43-.88-.6.07-.59.07-.59.98.07 1.49 1 1.49 1 .87 1.48 2.28 1.05 2.84.8.09-.63.34-1.06.62-1.3-2.18-.25-4.47-1.09-4.47-4.85 0-1.07.38-1.95 1.01-2.63-.1-.25-.44-1.25.09-2.6 0 0 .83-.27 2.71 1a9.3 9.3 0 0 1 4.94 0c1.88-1.27 2.71-1 2.71-1 .53 1.35.2 2.35.1 2.6.63.68 1.01 1.56 1.01 2.63 0 3.77-2.3 4.6-4.49 4.84.35.31.67.91.67 1.83v2.71c0 .26.18.57.68.47A9.8 9.8 0 0 0 12 2.2Z"/></symbol>
+    <symbol id="i-rss" viewBox="0 0 24 24"><path d="M5 5.4a13.6 13.6 0 0 1 13.6 13.6"/><path d="M5 10.6A8.4 8.4 0 0 1 13.4 19"/><circle cx="6.3" cy="17.7" r="1.7"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21.2s7-5.3 7-11.1a7 7 0 1 0-14 0c0 5.8 7 11.1 7 11.1Z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 3.2 20 7.6v8.8L12 20.8 4 16.4V7.6Z"/><path d="M4 7.6 12 12l8-4.4"/><line x1="12" y1="12" x2="12" y2="20.8"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9.2 17.8V6.6l9-1.8v11.2"/><circle cx="6.7" cy="17.9" r="2.5"/><circle cx="15.7" cy="15.9" r="2.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.4C10.4 5 8.2 4.5 4.8 4.5v13.2c3.4 0 5.6.6 7.2 2 1.6-1.4 3.8-2 7.2-2V4.5c-3.4 0-5.6.5-7.2 1.9Z"/><line x1="12" y1="6.4" x2="12" y2="19.7"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="3.6" y1="7.6" x2="20.4" y2="7.6"/><line x1="3.6" y1="16.4" x2="20.4" y2="16.4"/><circle cx="9" cy="7.6" r="2.5"/><circle cx="15.4" cy="16.4" r="2.5"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20.2 5.3 15.6 16.4 4.5a2 2 0 0 1 2.8 0l.5.5a2 2 0 0 1 0 2.8L8.6 18.9Z"/><line x1="14.6" y1="6.3" x2="17.7" y2="9.4"/></symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24"><path d="M3.4 12.2 20.6 4l-6.7 16.5L11 13.4Z"/><line x1="11" y1="13.4" x2="20.6" y2="4"/></symbol>
+    <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 13.6 6.6 5.2h10.8L20 13.6v5.2a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 18.8Z"/><path d="M4 13.6h4l1 2.4h6l1-2.4h4"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><line x1="12" y1="7.8" x2="12" y2="12.8"/><circle cx="12" cy="16.2" r=".95"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24"><path d="M9.8 6.2C6.6 7.5 5 9.9 5 13v4.8h5.8v-5.9H8.3c0-1.9.9-3.3 2.6-4.1Zm9 0C15.6 7.5 14 9.9 14 13v4.8h5.8v-5.9h-2.5c0-1.9.9-3.3 2.6-4.1Z"/></symbol>
+  </defs>
+</svg>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="../index.html">蒋东邕<span class="brand-handle">@jiangdongyong</span></a>
+    <nav class="nav-scroll" aria-label="主导航">
+      <ul class="menu" id="menu">
+        <li><a href="../index.html">首页</a></li>
+        <li><a href="../about.html">关于</a></li>
+        <li><a href="../now.html">现在</a></li>
+        <li><a href="../sources.html">信源</a></li>
+        <li><a href="../works.html">作品</a></li>
+        <li><a href="../writing.html" class="active" aria-current="page">文章</a></li>
+        <li><a href="../contact.html">联系</a></li>
+      </ul>
+    </nav>
+    <button class="theme" id="theme-toggle" type="button" aria-label="切换到深色模式" title="切换主题">
+      <svg class="ico ico-moon" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg>
+      <svg class="ico ico-sun" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg>
+    </button>
+  </div>
+</header><main id="main">
+  <section class="phead">
+    <div class="wrap">
+      <nav class="crumb" aria-label="面包屑">
+        <a href="../index.html">首页</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <a href="../writing.html">文章</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span aria-current="page">免费静态站的边界在哪里</span>
+      </nav>
+      <h1>免费静态站的边界在哪里</h1>
+      <p class="p-sub">免费、快、不用运维，但它有明确的形状。先认清哪三件事它做不了，再决定要不要用它。</p>
+      <ul class="meta-row">
+        <li>发布 <b>2026-08-03</b></li>
+        <li>阅读 <b>约 6 分钟</b></li>
+        <li class="k">标签 <b>静态站 · 部署 · 成本</b></li>
+      </ul>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="wrap">
+      <div class="read-wrap">
+        <article class="prose">
+<h2>先划清楚：静态站能做什么</h2>
+<ul>
+  <li>页面、样式、脚本、JSON 数据文件——凡是构建时能确定的东西。</li>
+  <li>自动签发的 HTTPS 证书、全球 CDN、每次推送的预览地址。</li>
+  <li>表单：交给第三方服务，或者干脆用 mailto 链接，不装表单也能收信。</li>
+  <li>统计：Cloudflare Web Analytics 免费、无 Cookie、不需要埋同意横幅。</li>
+</ul>
+<p>这些能力加起来，已经足够撑起一个个人简介加信息源的站点，成本是零。</p>
+
+<h2>再划清楚：它做不了什么</h2>
+<div class="tbl-wrap"><table>
+  <thead><tr><th>需求</th><th>为什么做不了</th><th>替代做法</th></tr></thead>
+  <tbody>
+    <tr><td data-label="需求">写操作（评论、点赞、收藏）</td><td data-label="为什么做不了">没有后端，没有可写文件系统</td><td data-label="替代做法">接第三方评论服务，或者不做</td></tr>
+    <tr><td data-label="需求">私密内容</td><td data-label="为什么做不了">部署即公开，URL 猜不到不等于安全</td><td data-label="替代做法">放在需要登录的地方</td></tr>
+    <tr><td data-label="需求">实时更新</td><td data-label="为什么做不了">没有数据库，只有构建产物</td><td data-label="替代做法">定时构建，或者前端轮询一个 JSON</td></tr>
+    <tr><td data-label="需求">用户上传</td><td data-label="为什么做不了">没有落盘位置</td><td data-label="替代做法">对象存储 + 预签名 URL</td></tr>
+    <tr><td data-label="需求">定时任务</td><td data-label="为什么做不了">构建钩子能定时构建，不能跑后台逻辑</td><td data-label="替代做法">外部 cron 触发构建</td></tr>
+  </tbody>
+</table></div>
+<p>这张表最有用的一列是第三列。大多数「静态站做不了」的需求，其实是被误判的——不需要自己写后端，只是需要一个别人写好的服务。</p>
+
+<h2>免费额度：实测数字</h2>
+<div class="tbl-wrap"><table>
+  <thead><tr><th>平台</th><th>带宽</th><th>构建</th><th>其他限制</th></tr></thead>
+  <tbody>
+    <tr><td data-label="平台">Cloudflare Pages</td><td data-label="带宽">不限</td><td data-label="构建">500 次/月（全账号共享）</td><td data-label="其他限制">单站 2 万文件，单文件 25MB</td></tr>
+    <tr><td data-label="平台">GitHub Pages</td><td data-label="带宽">约 100GB/月</td><td data-label="构建">10 次/小时</td><td data-label="其他限制">仓库 1GB，站点建议 1GB 内</td></tr>
+    <tr><td data-label="平台">Netlify</td><td data-label="带宽">100GB/月，超了停</td><td data-label="构建">300 分钟/月</td><td data-label="其他限制">超限是硬停，不是限速</td></tr>
+    <tr><td data-label="平台">Vercel Hobby</td><td data-label="带宽">100GB/月</td><td data-label="构建">—</td><td data-label="其他限制">仅限个人非商用</td></tr>
+  </tbody>
+</table></div>
+<p>个人站的实际流量通常每月几 GB，四家都够。真正的差别在「超限之后怎么办」：Cloudflare 不限带宽，最差是被要求优化；Netlify 是直接停站。选平台时看这条比看额度数字有用。</p>
+
+<h2>国内访问这件事</h2>
+<p>Cloudflare 的节点在境外，国内打开通常是能开、但不算快。如果要求国内速度，就要绑境内的对象存储或 CDN，而那就必须做 ICP 备案，同时域名还要实名。</p>
+<div class="callout">
+  <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-quote"></use></svg>
+  <div>免费、国内稳定、不备案——三个条件里只能同时满足两个。先想清楚放弃哪一个，再动手选平台。</div>
+</div>
+
+<h2>什么时候该放弃静态</h2>
+<p>出现下面任意一个信号，就该考虑换形态了：</p>
+<ul>
+  <li><strong>需要登录</strong>：一旦有「不同人看到不同内容」，静态就到底了。</li>
+  <li><strong>需要写入</strong>：用户产生的数据必须能落盘。</li>
+  <li><strong>内容多到手工维护不动</strong>：几百条以上还靠手改 HTML，说明该上生成器了——注意是生成器，不是后端。</li>
+</ul>
+<p>在那之前，一个 JSON 文件就是数据库，<code>git push</code> 就是发布流程，改一条数据不需要重启任何东西。</p>
+<p>静态站不是「简陋版的动态站」，它是另一种形状：内容不多、更新不快、读者不少、成本接近零。接受这个形状，它就很够用；不接受，就会一直觉得别扭。</p>
+        </article>
+      </div>
+      <nav class="pager" aria-label="文章翻页">
+<a class="prev" href="windows-python-toolchain.html"><span class="dir">← 上一篇</span><span class="t">Windows 上把 Python 工具链调到顺手</span></a>
+<a class="next" href="../writing.html"><span class="dir">全部 →</span><span class="t">全部文章</span></a>
+      </nav>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="wrap foot-inner">
+    <p class="foot-meta">© 2026 蒋东邕 · 内容 CC BY-NC 4.0</p>
+    <p class="foot-copy">Built with plain HTML · Hosted on Cloudflare Pages · No trackers</p>
+    <div class="foot-soc">
+      <a href="https://github.com/TOSKA1226" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+      </a>
+      <a href="../contact.html" data-mail="link" aria-label="电子邮件">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-mail"></use></svg>
+      </a>
+      <a href="/feed.xml" aria-label="RSS 订阅">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-rss"></use></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>
