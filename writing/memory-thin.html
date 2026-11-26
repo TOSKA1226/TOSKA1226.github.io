@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+(function () {
+  var d = document.documentElement;
+  d.classList.add('js');
+  var saved = null;
+  try { saved = localStorage.getItem('theme'); } catch (e) {}
+  var dark = false;
+  try { dark = window.matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {}
+  d.setAttribute('data-theme', (saved === 'dark' || saved === 'light') ? saved : (dark ? 'dark' : 'light'));
+})();
+</script>
+<title>把 Agent 的记忆做薄，而不是做大 · 蒋东邕</title>
+<meta name="description" content="一次记忆库重构的完整记录：档案层与洞察层的分工、做薄的五条规则、bge-m3 纯余弦检索、水位加指纹增量同步，以及召回率与上下文的实测结果。">
+<meta name="author" content="蒋东邕">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1424" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://toska1226.github.io/writing/memory-thin.html">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="蒋东邕">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="把 Agent 的记忆做薄，而不是做大">
+<meta property="og:description" content="一次记忆库重构的完整记录：档案层与洞察层的分工、做薄的五条规则、bge-m3 纯余弦检索、水位加指纹增量同步，以及召回率与上下文的实测结果。">
+<meta property="og:url" content="https://toska1226.github.io/writing/memory-thin.html">
+<meta property="og:image" content="https://toska1226.github.io/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="蒋东邕的个人主页分享卡：蓝白配色，姓名与三行简介。">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="把 Agent 的记忆做薄，而不是做大">
+<meta name="twitter:description" content="一次记忆库重构的完整记录：档案层与洞察层的分工、做薄的五条规则、bge-m3 纯余弦检索、水位加指纹增量同步，以及召回率与上下文的实测结果。">
+<meta name="twitter:image" content="https://toska1226.github.io/assets/og.png">
+
+<link rel="alternate" type="application/rss+xml" title="蒋东邕 · RSS" href="../feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%232563eb'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='PingFang SC,Microsoft YaHei,sans-serif' font-size='36' font-weight='700' fill='%23ffffff'%3E%E8%BF%B0%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="i-code" viewBox="0 0 24 24"><polyline points="8.6 8 4.6 12 8.6 16"/><polyline points="15.4 8 19.4 12 15.4 16"/><line x1="13.3" y1="5.8" x2="10.7" y2="18.2"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.6"/><polyline points="7.4 9.8 10 12 7.4 14.2"/><line x1="12.2" y1="14.6" x2="16.6" y2="14.6"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.4" ry="2.9"/><path d="M4.6 6v6c0 1.6 3.3 2.9 7.4 2.9s7.4-1.3 7.4-2.9V6"/><path d="M4.6 12v6c0 1.6 3.3 2.9 7.4 2.9s7.4-1.3 7.4-2.9v-6"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.1"/><line x1="12" y1="2.6" x2="12" y2="4.8"/><line x1="12" y1="19.2" x2="12" y2="21.4"/><line x1="2.6" y1="12" x2="4.8" y2="12"/><line x1="19.2" y1="12" x2="21.4" y2="12"/><line x1="5.4" y1="5.4" x2="6.9" y2="6.9"/><line x1="17.1" y1="17.1" x2="18.6" y2="18.6"/><line x1="18.6" y1="5.4" x2="17.1" y2="6.9"/><line x1="6.9" y1="17.1" x2="5.4" y2="18.6"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.2 13.4A8.4 8.4 0 1 1 10.6 3.8a6.7 6.7 0 0 0 9.6 9.6Z"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><line x1="4.8" y1="12" x2="18.6" y2="12"/><polyline points="12.8 6.2 18.6 12 12.8 17.8"/></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="9.4 7 17 7 17 14.6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.4"/><line x1="15.6" y1="15.6" x2="20.4" y2="20.4"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><line x1="6.4" y1="6.4" x2="17.6" y2="17.6"/><line x1="17.6" y1="6.4" x2="6.4" y2="17.6"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.6"/><polyline points="3.8 7.2 12 12.8 20.2 7.2"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 2.2a9.8 9.8 0 0 0-3.1 19.1c.49.09.67-.21.67-.47v-1.63c-2.72.59-3.3-1.31-3.3-1.31-.44-1.13-1.08-1.43-1.08-1.43-.88-.6.07-.59.07-.59.98.07 1.49 1 1.49 1 .87 1.48 2.28 1.05 2.84.8.09-.63.34-1.06.62-1.3-2.18-.25-4.47-1.09-4.47-4.85 0-1.07.38-1.95 1.01-2.63-.1-.25-.44-1.25.09-2.6 0 0 .83-.27 2.71 1a9.3 9.3 0 0 1 4.94 0c1.88-1.27 2.71-1 2.71-1 .53 1.35.2 2.35.1 2.6.63.68 1.01 1.56 1.01 2.63 0 3.77-2.3 4.6-4.49 4.84.35.31.67.91.67 1.83v2.71c0 .26.18.57.68.47A9.8 9.8 0 0 0 12 2.2Z"/></symbol>
+    <symbol id="i-rss" viewBox="0 0 24 24"><path d="M5 5.4a13.6 13.6 0 0 1 13.6 13.6"/><path d="M5 10.6A8.4 8.4 0 0 1 13.4 19"/><circle cx="6.3" cy="17.7" r="1.7"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21.2s7-5.3 7-11.1a7 7 0 1 0-14 0c0 5.8 7 11.1 7 11.1Z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 3.2 20 7.6v8.8L12 20.8 4 16.4V7.6Z"/><path d="M4 7.6 12 12l8-4.4"/><line x1="12" y1="12" x2="12" y2="20.8"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9.2 17.8V6.6l9-1.8v11.2"/><circle cx="6.7" cy="17.9" r="2.5"/><circle cx="15.7" cy="15.9" r="2.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.4C10.4 5 8.2 4.5 4.8 4.5v13.2c3.4 0 5.6.6 7.2 2 1.6-1.4 3.8-2 7.2-2V4.5c-3.4 0-5.6.5-7.2 1.9Z"/><line x1="12" y1="6.4" x2="12" y2="19.7"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="3.6" y1="7.6" x2="20.4" y2="7.6"/><line x1="3.6" y1="16.4" x2="20.4" y2="16.4"/><circle cx="9" cy="7.6" r="2.5"/><circle cx="15.4" cy="16.4" r="2.5"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20.2 5.3 15.6 16.4 4.5a2 2 0 0 1 2.8 0l.5.5a2 2 0 0 1 0 2.8L8.6 18.9Z"/><line x1="14.6" y1="6.3" x2="17.7" y2="9.4"/></symbol>
+    <symbol id="i-plane" viewBox="0 0 24 24"><path d="M3.4 12.2 20.6 4l-6.7 16.5L11 13.4Z"/><line x1="11" y1="13.4" x2="20.6" y2="4"/></symbol>
+    <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 13.6 6.6 5.2h10.8L20 13.6v5.2a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 18.8Z"/><path d="M4 13.6h4l1 2.4h6l1-2.4h4"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><line x1="12" y1="7.8" x2="12" y2="12.8"/><circle cx="12" cy="16.2" r=".95"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24"><path d="M9.8 6.2C6.6 7.5 5 9.9 5 13v4.8h5.8v-5.9H8.3c0-1.9.9-3.3 2.6-4.1Zm9 0C15.6 7.5 14 9.9 14 13v4.8h5.8v-5.9h-2.5c0-1.9.9-3.3 2.6-4.1Z"/></symbol>
+  </defs>
+</svg>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="../index.html">蒋东邕<span class="brand-handle">@jiangdongyong</span></a>
+    <nav class="nav-scroll" aria-label="主导航">
+      <ul class="menu" id="menu">
+        <li><a href="../index.html">首页</a></li>
+        <li><a href="../about.html">关于</a></li>
+        <li><a href="../now.html">现在</a></li>
+        <li><a href="../sources.html">信源</a></li>
+        <li><a href="../works.html">作品</a></li>
+        <li><a href="../writing.html" class="active" aria-current="page">文章</a></li>
+        <li><a href="../contact.html">联系</a></li>
+      </ul>
+    </nav>
+    <button class="theme" id="theme-toggle" type="button" aria-label="切换到深色模式" title="切换主题">
+      <svg class="ico ico-moon" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg>
+      <svg class="ico ico-sun" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg>
+    </button>
+  </div>
+</header><main id="main">
+  <section class="phead">
+    <div class="wrap">
+      <nav class="crumb" aria-label="面包屑">
+        <a href="../index.html">首页</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <a href="../writing.html">文章</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span aria-current="page">把 Agent 的记忆做薄，而不是做大</span>
+      </nav>
+      <h1>把 Agent 的记忆做薄，而不是做大</h1>
+      <p class="p-sub">四个月里我把一个记忆库从 34MB 删到 9MB，召回反而变准了。这篇写给想给自己做个长期记忆的同行。</p>
+      <ul class="meta-row">
+        <li>发布 <b>2026-11-21</b></li>
+        <li>阅读 <b>约 7 分钟</b></li>
+        <li class="k">标签 <b>Agent · 记忆 · 检索</b></li>
+      </ul>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="wrap">
+      <div class="read-wrap">
+        <article class="prose">
+<h2>第一版：把记忆做成了垃圾桶</h2>
+<p>最初的实现很朴素：每轮对话结束，把这一轮的结论写进一个 JSON 文件，下次启动时取最近 N 条塞进上下文。前两周效果很好，第三个月开始明显变差——库里堆了四千多条，检索取前 5 条，其中三四条是「好的，我来处理」「需要我继续吗」这类没有信息量的句子。</p>
+<p>问题不在模型，在<strong>检索</strong>。存进去的东西没有结构，读出来的东西就没有优先级。那段时间我一直在调提示词，实际上是在用提示词补存储设计的债。</p>
+
+<h2>拆成两层，各自回答不同的问题</h2>
+<p>后来按「一条信息有多大」把存储拆开，边界一下就清楚了：</p>
+<div class="tbl-wrap"><table>
+  <thead><tr><th>层</th><th>单位</th><th>典型内容</th><th>取回方式</th></tr></thead>
+  <tbody>
+    <tr><td data-label="层">档案层</td><td data-label="单位">整篇文档，带 front matter（title / revision / sourcePaths）</td><td data-label="典型内容">「这个项目怎么部署」「某个技能的完整步骤」</td><td data-label="取回方式">按主题整块取回</td></tr>
+    <tr><td data-label="层">洞察层</td><td data-label="单位">一句一条，带 category / importance / tags</td><td data-label="典型内容">「偏好 pnpm 而不是 npm」「这个仓库禁止裸 as any」</td><td data-label="取回方式">向量 + 关键词</td></tr>
+  </tbody>
+</table></div>
+<p>档案层回答「这件事的完整做法是什么」，洞察层回答「他知道什么、偏好什么」。混在一起存，就会出现用一整篇部署文档去回答一个偏好问题的情况——既浪费上下文，又答不准。</p>
+
+<h2>做薄的五条规则</h2>
+<p>体积不是靠定期清理解决的，是靠写入时就拒绝垃圾。我最后落成五条：</p>
+<ul>
+  <li><strong>一条只写一个事实。</strong>「他喜欢用 Python 做数据处理，讨厌写前端，Windows 上用 junction 管目录」——这是三条，写一行就废了。</li>
+  <li><strong>写之前先搜。</strong>命中相似内容就跳过，宁可缺，不要重。重复写入比不写更伤检索质量。</li>
+  <li><strong>软删 + gc。</strong>删除只打 <code>deleted_at</code> 标记，累积到阈值再物理清理。留出反悔窗口，也避免了频繁重写整个文件。</li>
+  <li><strong>容量上限当硬约束。</strong>全库 10MB 是天花板，不是建议值。写满就逼着自己排序：哪条真的有用？删的过程本身就是一次重要性评估。</li>
+  <li><strong>不存能重新算出来的东西。</strong>文件列表、目录树、git 状态这类，随时可以现查，存进去只会过期。</li>
+</ul>
+
+<div class="callout">
+  <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-quote"></use></svg>
+  <div>记忆的价值不在体积，在命中率。做薄不是妥协，是让每一条都有被取回的理由。</div>
+</div>
+
+<h2>检索：先向量，再关键词兜底</h2>
+<p>嵌入用 bge-m3，1024 维；检索是纯余弦，没有 ANN 索引。有人会问是不是太慢——实测万条以内，一次 numpy 矩阵乘法 20 毫秒出头，上 HNSW 属于过早优化，还多一个要维护的结构。</p>
+<p>关键词通道（SQL LIKE / FTS）必须保留。中文分词在专有名词上很不稳：查「水位」「指纹」「软删」这种词，向量会把语义相近但无关的内容捞上来，字面匹配反而准。两条通道取并集再按分数排，比单走向量稳。</p>
+<p>排序时给 <code>importance</code> 一个乘数，但不过度加权。试过把 important=5 的权重放得很大，结果每次召回都是那几条「核心原则」，具体问题反而被挤掉。</p>
+
+<h2>增量同步：水位加指纹</h2>
+<p>多个工作区要汇进同一个库，全量重扫太慢，于是记两个东西：</p>
+<ul>
+  <li><strong>水位</strong>：上次同步到的最大 mtime / 序号，只处理更新的部分。</li>
+  <li><strong>指纹</strong>：文件 size + mtime + hash，三项都没变就跳过；只有 mtime 变了但内容没变（常见于 checkout、格式化）也跳过。</li>
+</ul>
+<p>目录用 junction 挂进来的外部工作区单独分流，避免软链接环路把同步卡死——这是踩过的坑，不写这一条，第一次跑就会在某个循环链接上转到超时。</p>
+
+<h2>结果</h2>
+<ul>
+  <li>召回质量：从「5 条里 1 条有用」变成「5 条里 3 到 4 条有用」。</li>
+  <li>上下文占用：同样任务下，记忆注入的平均 token 下降约 60%。</li>
+  <li>全库体积：从 34MB 压到 9MB 以内，且不再随时间单调增长。</li>
+</ul>
+<p>最有用的其实不是这些数字，是删东西这件事本身变得容易了。设计成能删，才敢往里写。</p>
+        </article>
+      </div>
+      <nav class="pager" aria-label="文章翻页">
+
+<a class="next" href="teaching-to-engineering.html"><span class="dir">下一篇 →</span><span class="t">教学经历如何迁移成工程方法</span></a>
+      </nav>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="wrap foot-inner">
+    <p class="foot-meta">© 2026 蒋东邕 · 内容 CC BY-NC 4.0</p>
+    <p class="foot-copy">Built with plain HTML · Hosted on Cloudflare Pages · No trackers</p>
+    <div class="foot-soc">
+      <a href="https://github.com/TOSKA1226" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+      </a>
+      <a href="../contact.html" data-mail="link" aria-label="电子邮件">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-mail"></use></svg>
+      </a>
+      <a href="/feed.xml" aria-label="RSS 订阅">
+        <svg class="ico" aria-hidden="true" focusable="false"><use href="#i-rss"></use></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+<script src="../assets/app.js" defer></script>
+</body>
+</html>
