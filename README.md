@@ -1,5 +1,7 @@
 # 个人站 · 蒋东邕
 
+**线上：<https://toska1226.github.io/>** · 仓库：<https://github.com/TOSKA1226/TOSKA1226.github.io> · 部署：GitHub Pages（Actions 工作流）
+
 零依赖静态站：17 个 HTML + 1 份 CSS + 1 份 JS + 1 份 JSON。
 没有构建步骤，没有 `npm install`，没有外部字体、CDN 或统计脚本。打开任何一个页面，浏览器只会请求本站自己的文件（信息源条目的外链是用户点击后才出去的）。
 
@@ -49,10 +51,16 @@ personal-site/
 ├── data/
 │   └── sources.json          22 条信息源，页面唯一数据源
 ├── previews/                 26 张验收截图（桌面 1440 / 移动 390@2x）
+├── tools/
+│   └── set-domain.mjs        一件事：把全站域名批量换成新域名
+├── .github/workflows/
+│   ├── pages.yml             GitHub Pages 部署（当前生效）
+│   └── deploy.yml            同上，同名工作流的历史副本
 ├── robots.txt
 ├── sitemap.xml               15 个 <loc>
 ├── feed.xml                  RSS 2.0，4 篇完整文章
-├── _headers                  Cloudflare Pages 缓存与安全响应头
+├── _headers                  Cloudflare Pages 缓存与安全响应头（GH Pages 不读，留着备迁移）
+├── .nojekyll                 关掉 GH Pages 的 Jekyll，否则 _ 开头目录会被吞
 └── .backup-archive-v1/       旧版「纸本档案」风（仅存档，不参与部署）
 ```
 
@@ -135,28 +143,52 @@ personal-site/
 - `feed.xml` 4 条 item，`link` 与 `guid` 都指向真实文章页，带 `atom:link rel="self"`。
 - `_headers` 让 HTML 与 JSON 每次回源校验（`max-age=0, must-revalidate`），只有 `og.png` 缓存一周。改内容立刻生效，不用等缓存过期。
 
-⚠️ **路径前提**：全站有 24 处根绝对路径（23 处 `href="/feed.xml"` + 1 处 `href="/"`）。这要求站点部署在**域名根目录**。Cloudflare Pages、Vercel、Netlify 都满足；**GitHub Pages 的项目站（`user.github.io/repo/`）不满足**，那些链接会 404——用 GH Pages 就必须配自定义域或建 `user.github.io` 仓库。
+⚠️ **路径前提**：全站有 24 处根绝对路径（23 处 `href="/feed.xml"` + 1 处 `href="/"`）。这要求站点部署在**域名根目录**。现在部署的 `TOSKA1226.github.io` 是**用户站**，域名根就是站点根，满足条件；换成 GitHub Pages 的**项目站**（`user.github.io/repo/`）会让这 24 处 404。
 
 ---
 
-## 部署（Cloudflare Pages）
+## 部署（GitHub Pages，已上线）
 
-1. 把 `personal-site/` 推到 GitHub 仓库。
-2. Cloudflare Dashboard → Workers & Pages → Create → Pages → Connect to Git，选中该仓库。
-3. 构建配置：Framework preset = **None**，Build command **留空**，Build output directory = `/`（如果仓库根就是网站根）或 `personal-site`。
-4. Deploy。首次构建约 30 秒，之后每次 push 自动重建。
-5. 想要短域名就在 Pages 里加 Custom domain，DNS 由 Cloudflare 托管时自动配好。
+**线上地址：<https://toska1226.github.io/>**
+仓库：<https://github.com/TOSKA1226/TOSKA1226.github.io>（public，仓库根 = 站点根）
 
-不需要服务器、数据库、备案（境外接入）、SSL 证书（自动签发并续期）、CDN（本身就是边缘网络）。
+工作流 `.github/workflows/pages.yml`：`push` 到 `main` 或手动 `workflow_dispatch` 时，checkout → `configure-pages` → `upload-pages-artifact`（`path: '.'`）→ `deploy-pages`。权限 `contents:read` / `pages:write` / `id-token:write`，环境 `github-pages`。一次构建约 40 秒。
+
+首次开启 Pages 时**必须**把构建类型设成 workflow，否则会走已废弃的 legacy builder（每个 commit 都 `Page build failed.`、duration 0）：
+
+```bash
+curl -X PUT -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/TOSKA1226/TOSKA1226.github.io/pages \
+  -d '{"build_type":"workflow"}'
+```
+
+推代码的两条路：
+
+| 方式 | 命令 | 备注 |
+| --- | --- | --- |
+| `git push` | `git push origin main` | 本机 `github.com:443` 被网络阻断，实测超时；能直连时首选 |
+| Contents API | `node .tools/put-file.mjs <仓库内路径> <本地文件>` | 走 `api.github.com`（可通），单文件一次 201/200，自动处理 sha |
+
+Contents API 的等价 curl（单文件）：
+
+```bash
+base64 -w0 index.html > /tmp/b64
+jq -n --rawfile c /tmp/b64 '{message:"update index",content:($c|gsub("\\n";"")),branch:"main"}' \
+ | curl -X PUT -H "Authorization: token $GH_TOKEN" \
+     https://api.github.com/repos/TOSKA1226/TOSKA1226.github.io/contents/index.html -d @-
+```
+
+不需要服务器、数据库、备案（境外接入）、SSL 证书（自动签发并续期）、CDN（本身就是边缘网络）。Pages 的 `_headers` 不生效，缓存策略由 GitHub 决定（HTML 约 10 分钟 CDN 缓存）。
 
 ---
 
 ## 预览图
 
-`previews/` 共 26 张，全部在本轮改名后用 headless Chrome 重拍：
+`previews/` 共 29 张，全部在改名后用 headless Chrome 重拍；末尾 3 张 `live-*` 是直接打线上 URL 拍的（证明部署后的真站与本地一致）：
 
 - 桌面 1440：`hub-light` `hub-dark` `hub-full` `about-page` `now-*` `sources-list` `sources-dark` `works-list` `works-detail-top` `works-detail-body` `writing-list` `art-top` `art-table` `art-pager` `contact-shown` `404-page`
 - 移动 390（@2x，780×1688）：`m-hub` `m-works` `m-detail` `m-contact` `m-sources` `m-writing-list` `m-art-top` `m-art-table` `m-art-pre` `m-art-pager` `m-work-table`
+- 线上实测：`live-hub-1440` `live-hub-390` `live-sources-1440`
 
 图片是验收证据，不参与站点运行。
 
@@ -170,5 +202,7 @@ personal-site/
 - [x] 1440 / 1120 / 1024 / 900 / 768 / 700 / 561 / 560 / 430 / 390 / 360 / 320 十二档无横向溢出
 - [x] 390 下表格内滚、代码块换行、导航 7 项全部可见
 - [x] 主题切换持久化，刷新不闪白
-- [ ] 域名确定为 `toska1226.github.io` 之外的值时，全站替换该串（`grep -rl toska1226.github.io .`）
+- [x] 已上线 `https://toska1226.github.io/`，首页 / CSS / JS / JSON / 详情页 / 文章页 / feed / sitemap / robots / og.png 全 200
+- [x] 不存在的路径返回 404 且落到自定义 `404.html`
+- [ ] 域名换成 `toska1226.github.io` 之外的值时，跑 `node tools/set-domain.mjs . https://新域名` 一次改完 92 处
 - [ ] 若换邮箱：改 `assets/app.js` 里的 charCode 数组，别直接写明文
