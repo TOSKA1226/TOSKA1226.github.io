@@ -1,0 +1,211 @@
+{
+  "updated": "2026-11-25",
+  "items": [
+    {
+      "name": "MDN Web Docs",
+      "url": "https://developer.mozilla.org/zh-CN/",
+      "group": "工程与前端",
+      "note": "HTML/CSS/JS 的权威解释，遇到兼容性问题第一个查这里。",
+      "tags": [
+        "web",
+        "reference"
+      ]
+    },
+    {
+      "name": "web.dev",
+      "url": "https://web.dev/",
+      "group": "工程与前端",
+      "note": "性能、可访问性、Core Web Vitals 的实操文章，偏工程落地。",
+      "tags": [
+        "performance"
+      ]
+    },
+    {
+      "name": "Astro Docs",
+      "url": "https://docs.astro.build/",
+      "group": "工程与前端",
+      "note": "内容站首选框架的官方文档，岛屿架构讲得最清楚。",
+      "tags": [
+        "astro",
+        "ssg"
+      ]
+    },
+    {
+      "name": "Cloudflare Docs",
+      "url": "https://developers.cloudflare.com/pages/",
+      "group": "工程与前端",
+      "note": "Pages / Workers / R2 的免费额度与限制都写在这里，别信二手博客。",
+      "tags": [
+        "hosting"
+      ]
+    },
+    {
+      "name": "GitHub Docs",
+      "url": "https://docs.github.com/",
+      "group": "工程与前端",
+      "note": "Actions 语法与 Pages 限制的原始出处。",
+      "tags": [
+        "git",
+        "ci"
+      ]
+    },
+    {
+      "name": "Anthropic Engineering",
+      "url": "https://www.anthropic.com/engineering",
+      "group": "AI / Agent",
+      "note": "Agent 设计、上下文工程、工具调用的一手经验，比教程密度高。",
+      "tags": [
+        "agent",
+        "llm"
+      ]
+    },
+    {
+      "name": "OpenAI Cookbook",
+      "url": "https://cookbook.openai.com/",
+      "group": "AI / Agent",
+      "note": "可直接跑的示例代码，适合验证某个 API 到底怎么用。",
+      "tags": [
+        "llm",
+        "code"
+      ]
+    },
+    {
+      "name": "Hugging Face Blog",
+      "url": "https://huggingface.co/blog",
+      "group": "AI / Agent",
+      "note": "模型与推理优化的工程细节，更新快。",
+      "tags": [
+        "model"
+      ]
+    },
+    {
+      "name": "Lil'Log",
+      "url": "https://lilianweng.github.io/",
+      "group": "AI / Agent",
+      "note": "长文综述，Agent、记忆、RL 的系统性梳理，值得整篇读完。",
+      "tags": [
+        "survey"
+      ]
+    },
+    {
+      "name": "arXiv cs.CL",
+      "url": "https://arxiv.org/list/cs.CL/recent",
+      "group": "AI / Agent",
+      "note": "只看标题和摘要，用来判断某个说法有没有出处。",
+      "tags": [
+        "paper"
+      ]
+    },
+    {
+      "name": "Python 官方文档",
+      "url": "https://docs.python.org/zh-cn/3/",
+      "group": "Python",
+      "note": "标准库优先于第三方库，很多轮子官方早就有了。",
+      "tags": [
+        "python"
+      ]
+    },
+    {
+      "name": "Real Python",
+      "url": "https://realpython.com/",
+      "group": "Python",
+      "note": "教程质量稳定，适合补 asyncio、typing 这类容易半懂的知识。",
+      "tags": [
+        "python",
+        "tutorial"
+      ]
+    },
+    {
+      "name": "PEP 索引",
+      "url": "https://peps.python.org/",
+      "group": "Python",
+      "note": "语法与标准演进的原始依据，写库时查兼容性。",
+      "tags": [
+        "python",
+        "spec"
+      ]
+    },
+    {
+      "name": "Astral Blog",
+      "url": "https://astral.sh/blog",
+      "group": "Python",
+      "note": "uv / ruff 背后的工程思路，包管理与 lint 的现状参考。",
+      "tags": [
+        "tooling"
+      ]
+    },
+    {
+      "name": "Simon Willison's Weblog",
+      "url": "https://simonwillison.net/",
+      "group": "长期阅读",
+      "note": "LLM 工具链的一手实测，几乎每天更新，观点克制。",
+      "tags": [
+        "llm",
+        "blog"
+      ]
+    },
+    {
+      "name": "Julia Evans",
+      "url": "https://jvns.ca/",
+      "group": "长期阅读",
+      "note": "把系统底层讲成人话，调试与网络排查的思维方式。",
+      "tags": [
+        "systems"
+      ]
+    },
+    {
+      "name": "Hacker News",
+      "url": "https://news.ycombinator.com/",
+      "group": "长期阅读",
+      "note": "只看前两页和评论区的反对意见，比看结论有用。",
+      "tags": [
+        "news"
+      ]
+    },
+    {
+      "name": "Lobsters",
+      "url": "https://lobste.rs/",
+      "group": "长期阅读",
+      "note": "技术浓度比 HN 高，噪声少。",
+      "tags": [
+        "news"
+      ]
+    },
+    {
+      "name": "阮一峰 · 科技爱好者周刊",
+      "url": "https://www.ruanyifeng.com/blog/",
+      "group": "长期阅读",
+      "note": "中文语境下的工具与资源汇总，每周一期。",
+      "tags": [
+        "weekly"
+      ]
+    },
+    {
+      "name": "Can I use",
+      "url": "https://caniuse.com/",
+      "group": "工具",
+      "note": "CSS/JS 特性兼容性速查，决定要不要写降级。",
+      "tags": [
+        "compat"
+      ]
+    },
+    {
+      "name": "Regex101",
+      "url": "https://regex101.com/",
+      "group": "工具",
+      "note": "正则调试与解释，带逐步匹配过程。",
+      "tags": [
+        "regex"
+      ]
+    },
+    {
+      "name": "Excalidraw",
+      "url": "https://excalidraw.com/",
+      "group": "工具",
+      "note": "手绘风架构图，导出 SVG 直接进文章。",
+      "tags": [
+        "diagram"
+      ]
+    }
+  ]
+}
