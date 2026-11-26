@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>蒋东邕 · 文章</title>
+  <link>https://toska1226.github.io/</link>
+  <description>踩坑记录与工程笔记。</description>
+  <language>zh-cn</language>
+  <atom:link href="https://toska1226.github.io/feed.xml" rel="self" type="application/rss+xml"/>
+  <lastBuildDate>Thu, 26 Nov 2026 12:00:00 +0800</lastBuildDate>
+  <item>
+    <title>把 Agent 的记忆做薄，而不是做大</title>
+    <link>https://toska1226.github.io/writing/memory-thin.html</link>
+    <guid isPermaLink="true">https://toska1226.github.io/writing/memory-thin.html</guid>
+    <pubDate>Sat, 21 Nov 2026 12:00:00 +0800</pubDate>
+    <description>检索增强的正确目标不是塞更多上下文，而是让每一段拿出来的都真的被用到。</description>
+  </item>
+  <item>
+    <title>教学经历如何迁移成工程方法</title>
+    <link>https://toska1226.github.io/writing/teaching-to-engineering.html</link>
+    <guid isPermaLink="true">https://toska1226.github.io/writing/teaching-to-engineering.html</guid>
+    <pubDate>Fri, 16 Oct 2026 12:00:00 +0800</pubDate>
+    <description>把复杂东西拆成可执行步骤，是排课表练出来的，不是写代码练出来的。</description>
+  </item>
+  <item>
+    <title>Windows 上把 Python 工具链调到顺手</title>
+    <link>https://toska1226.github.io/writing/windows-python-toolchain.html</link>
+    <guid isPermaLink="true">https://toska1226.github.io/writing/windows-python-toolchain.html</guid>
+    <pubDate>Tue, 08 Sep 2026 12:00:00 +0800</pubDate>
+    <description>路径、编码、符号链接、进程锁，四个坑的固定解法。</description>
+  </item>
+  <item>
+    <title>免费静态站的边界在哪里</title>
+    <link>https://toska1226.github.io/writing/static-site-limits.html</link>
+    <guid isPermaLink="true">https://toska1226.github.io/writing/static-site-limits.html</guid>
+    <pubDate>Mon, 03 Aug 2026 12:00:00 +0800</pubDate>
+    <description>什么时候纯静态够了，什么时候你其实需要一个后端。</description>
+  </item>
+</channel>
+</rss>
